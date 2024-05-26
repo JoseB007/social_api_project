@@ -1,0 +1,353 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<div class="container">
+    <div class="container mt-5">
+        <div class="row mx-auto">
+            <div class="col-sm-6">
+                {% if error_campos_vacios %}
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                    <strong>Atención!</strong> {{ error_campos_vacios }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endif %}
+                {% if error_contenido %}
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                    <strong>Atención!</strong> {{ error_contenido }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endif %}
+                <div class="card" style="width: 100%;">
+                    <div class="card-header">
+                        <strong class="card-title">Bienvenido...</strong>
+                    </div>
+                    <div class="card-body">
+                        <div class="p-3">
+                            <div class="row">
+                                <div class="col">
+                                    <h4><a href="{% url 'perfil' usuario.nombre_usuario %}" style="text-decoration: none;">{{ usuario.nombre_usuario }}</a></h4>
+                                </div>
+                                <div class="col">
+                                    {% if usuario_autenticado %}
+                                        {% if usuario %}
+                                            {% if usuario != usuario_autenticado %}
+                                            {% if usuario.id not in solicitudes_recibidas and usuario.id not in solicitudes_enviadas %}
+                                                <form action="{% url 'agregar_amigo' %}" method="post">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="id_usuario" value="{{ usuario.id }}">
+                                                    Enviar solicitud de amistad
+                                                    <button type="submit" name="enviar_solicitud" value="{{ tipo_solicitudes.0 }}" style="border: 0; background-color: transparent;">
+                                                        <img src="{% static 'botones/add_amigo.png' %}" width="24">
+                                                    </button>
+                                                     
+                                                </form>
+                                                {% else %}
+                                                    {% if usuario.id in solicitudes_recibidas or usuario.id in solicitudes_enviadas %}
+                                                    {% if usuario.id in solicitudes_enviadas_pendientes %}
+                                                        Has enviado una solicitud de amistad
+                                                    {% elif usuario.id in solicitudes_recibidas_pendientes %}
+                                                        {{ usuario.nombre_usuario }} te ha enviado una solicitud de amistad
+                                                    {% endif %}  
+                                                    
+                                                    <div style="text-align: center;">
+                                                    {% if usuario.id in solicitudes_enviadas_aceptadas or usuario.id in solicitudes_recibidas_aceptadas %}
+                                                        <p>{{ usuario.nombre_usuario }} y tú ahora son amigos</p>
+                                                    {% endif %}
+                                                    </div>  
+                                                    
+                                                    {% if usuario.id in solicitudes_enviadas_rechazadas %}
+                                                        {{ usuario.nombre_usuario }} ha reachazado tu solicitud de amistad
+                                                    {% elif usuario.id in solicitudes_recibidas_rechazadas %}
+                                                        Has reachazado la solicitud de amistad de {{ usuario.nombre_usuario }}
+                                                    {% endif %}
+                                                {% endif %}  
+                                            {% endif %}
+                                            {% if usuario.id in solicitudes_enviadas_aceptadas or usuario.id in solicitudes_recibidas_aceptadas %}
+                                                <form action="{% url 'eliminar_amigo' %}" method="post">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="id_usuario" value="{{ usuario.id }}">
+                                                    <div class="d-grid gap-2">
+                                                        <button type="submit" name="eliminar_solicitud" class="btn btn-outline-dark">
+                                                            Eliminar Amigo
+                                                        </button>
+                                                    </div>
+                                                </form>
+                                            {% endif %}
+                                            {% endif %}      
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            {% if usuario_autenticado %}
+                                {% if usuario %}
+                                    {% if solicitudes_usuario_recibidas or solicitudes_usuario_enviadas %}
+                                    <div style="margin-top: 1rem;">
+                                        <div class="container-amigos"">
+                                            <h5 class="card-title">Amigos</h5>
+                                            {% if lista_amigos %}
+                                                {% for amigo in lista_amigos %}
+                                                    <p><a href="{{ amigo }}" style="text-decoration: none;">{{ amigo }}</a></p>
+                                                {% endfor %}
+                                            {% endif %}
+                                        </div>
+
+                                        <div class="container-usuario-solicitud">
+                                            <h5 class="card-title">Solicitudes de Amistad</h5>
+                                            {% for solicitud_usuario_recibida in solicitudes_usuario_recibidas %}
+                                                {% if solicitud_usuario_recibida.solicitante.id in solicitudes_recibidas_pendientes %}
+                                                <form action="{% url 'aceptar_amigo' %}" method="post">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" value="{{ solicitud_usuario_recibida.solicitante_id  }}" name="id_usuario">
+                                                    <div class="container-solicitud">
+                                                        <p><a href="{% url 'perfil' solicitud_usuario_recibida.solicitante %}" style="text-decoration: none;">{{ solicitud_usuario_recibida.solicitante }}</a> te ha enviado una solicitud de amistad</p>
+                                                    <div>
+                                                        <button class="btn btn-outline-dark" type="submit" name="aceptar_solicitud" value="{{ tipo_solicitudes.1 }}">
+                                                            Aceptar
+                                                        </button>
+                                                        <button class="btn btn-outline-dark" type="submit" name="rechazar_solicitud" value="{{ tipo_solicitudes.2 }}">
+                                                            Eliminar
+                                                        </button>
+                                                    </div>
+                                                    </div> 
+                                                </form>
+                                                {% endif %}
+                                            {% endfor %}
+                                            {% for solicitud_usuario_enviada in solicitudes_usuario_enviadas %}
+                                            {% if solicitud_usuario_enviada.solicitado.id in solicitudes_enviadas_pendientes %}
+                                            <p style="margin-bottom: .5rem;">
+                                                Has enviado una solicitud de amistad a 
+                                                <a href="{% url 'perfil' solicitud_usuario_enviada.solicitado %}">{{ solicitud_usuario_enviada.solicitado }}</a>
+                                            </p>
+                                            {% endif %}
+                                            {% endfor %}
+                                        </div>                                  
+                                    </div>
+                                    {% endif %}
+                                {% endif %}
+                            {% endif %} 
+                        </div>
+                    </div>
+                    {% if request.session.id_usuario %}
+                    {% if usuario_autenticado.id == usuario.id %}
+                    <div class="card-footer">
+                        <div class="p-2">
+                            <div class="row">
+                                <div class="col">
+                                    <button class="btn btn-primary" style="border: 0;" type="button"
+                                        data-bs-toggle="modal" data-bs-target="#modal_publicacion">Hacer una
+                                        publicacion...</button>
+                                    <button class="btn btn-primary" style="border: 0;" type="button"
+                                        data-bs-toggle="modal" data-bs-target="#modal_edit">Editar mi perfil</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal fade" id="modal_edit">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h1 class="modal-title fs-5" id="exampleModalLabel">Editar Perfil</h1>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                            aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="p-2">
+                                            <form id="registro-form" method="post"
+                                                action="{% url 'actualizar_perfil' %}">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="id_usuario" value="{{ usuario.id }}">
+                                                <div class="mb-3" style="padding: 0px 20px 20px 20px">
+                                                    <input type="text" name="nombre_usuario"
+                                                        placeholder="Nombre completo" class="form-control"
+                                                        value="{{ usuario.nombre_usuario }}">
+                                                    <input type="email" name="correo_electronico" placeholder="Email"
+                                                        class="form-control" value="{{ usuario.correo_electronico }}">
+                                                </div>
+                                                <div style="padding-left: 20px;">
+                                                    <button type="submit" class="btn btn-outline-dark">GUARDAR</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal fade" id="modal_publicacion">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h1 class="modal-title fs-5" id="exampleModalLabel">Nueva Publicación...</h1>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                            aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="p-2">
+                                            <form method="post" action="{% url 'crear_publicacion' %}"
+                                                enctype="multipart/form-data">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="id_usuario" value="{{ usuario.id }}">
+                                                <div class="mb-3" style="padding: 0px 20px 0px 20px">
+                                                    <textarea class="form-control" name="contenido_publicacion"
+                                                        placeholder="¿Sobre qué quieres hablar?"></textarea>
+                                                    <input class="form-control" type="file" name="img_publicacion">
+                                                </div>
+                                                <div style="padding-left: 20px;">
+                                                    <button type="submit" class="btn btn-outline-dark">PUBLICAR</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="col-sm-6">
+                {% if publicaciones %}
+                {% for publicacion in publicaciones %}
+                <div class="row" style="padding: 0 80px 0 80px; margin-bottom: 40px;">
+                    <div class="card p-0">
+                        <div class="card-header" style="text-align: left;">
+                            <div class="row">
+                                <div class="col-sm-8">
+                                    <a href="{% url 'perfil' publicacion.autor %}" style="text-decoration: none;">{{ publicacion.autor }}</a>
+                                    <p style="margin: 0;">{{ publicacion.fecha_creacion }}</p>
+                                </div>
+                                {% if request.session.id_usuario %}
+                                {% if usuario_autenticado.id == usuario.id %}
+                                <div class="modal fade" id="{{ publicacion.id }}">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h1 class="modal-title fs-5" id="exampleModalLabel">Editar
+                                                    Publicación...</h1>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                    aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="p-2">
+                                                    <form method="post" action="{% url 'actualizar_publicacion' %}"
+                                                        enctype="multipart/form-data">
+                                                        {% csrf_token %}
+                                                        <input type="hidden" name="id_publicacion" value="{{ publicacion.id }}">
+                                                        <div class="mb-3" style="padding: 0px 20px 0px 20px">
+                                                            <input class="form-control" type="text" name="contenido_publicacion" value="{{ publicacion.contenido }}" style="margin-bottom: 1rem;">
+                                                            {% if publicacion.imagen %}
+                                                            <div class="card-body p-0">
+                                                                <img src="{{ publicacion.imagen.url }}" class="card-img-top"
+                                                                    style="border-radius: 0;">
+                                                            </div>
+                                                            {% endif %}
+                                                            <input class="form-control" type="file"
+                                                                name="img_publicacion">
+                                                        </div>
+                                                        <div style="padding-left: 20px;">
+                                                            <button type="submit"
+                                                                class="btn btn-outline-dark">PUBLICAR</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col align-self-center d-md-flex justify-content-md-end">
+                                    <button type="button" style="border: 0; background-color: transparent;"
+                                        data-bs-toggle="modal" data-bs-target="#{{ publicacion.id }}">
+                                        <img src="{% static 'botones/edit.png' %}" width="32">
+                                    </button>
+                                    <a href="{% url 'eliminar_publicacion' publicacion.id %}">
+                                        <img src="{% static 'botones/delete.png' %}" width="32">
+                                    </a>
+                                </div>
+                                {% endif %}
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% if publicacion.imagen %}
+                        <div class="card-body p-0">
+                            <img src="{{ publicacion.imagen.url }}" class="card-img-top"
+                                style="border-radius: 0;">
+                        </div>
+                        {% endif %}
+                        <div class="card-footer text-body-secondary">
+                            <div class="row">
+                                <div class="col">
+                                    <form action="{% url 'reaccion' %}" method="post">
+                                        {% csrf_token %}
+                                        <input type="hidden" value="{{ publicacion.id }}" name="id_publicacion">
+                                        <input type="hidden" name="from_profile" value="True">
+                                        {% for reaccion in reacciones %}
+                                        {% if reaccion.0 == 'like' %}
+                                        {% if reacciones_like %}
+                                        {% if publicacion.id in reacciones_like %}
+                                        <button type="submit" name="me_gusta" value="{{ reaccion.0 }}"
+                                            style="border: 0; background-color: transparent;">
+                                            <img src="{% static 'botones/like_if.png' %}" width="24">
+                                        </button>
+                                        {% else %}
+                                        <button type="submit" name="me_gusta" value="{{ reaccion.0 }}"
+                                            style="border: 0; background-color: transparent;">
+                                            <img src="{% static 'botones/like.png' %}" width="24">
+                                        </button>
+                                        {% endif %}
+                                        {% else %}
+                                        <button type="submit" name="me_gusta" value="{{ reaccion.0 }}"
+                                            style="border: 0; background-color: transparent;">
+                                            <img src="{% static 'botones/like.png' %}" width="24">
+                                        </button>
+                                        {% endif %}
+                                        {% else %}
+                                        {% if reacciones_dislike %}
+                                        {% if publicacion.id in reacciones_dislike %}
+                                        <button type="submit" name="no_me_gusta" value="{{ reaccion.0 }}"
+                                            style="border: 0; background-color: transparent;">
+                                            <img src="{% static 'botones/dislike_if.png' %}" width="24">
+                                        </button>
+                                        {% else %}
+                                        <button type="submit" name="no_me_gusta" value="{{ reaccion.0 }}"
+                                            style="border: 0; background-color: transparent;">
+                                            <img src="{% static 'botones/dislike.png' %}" width="24">
+                                        </button>
+                                        {% endif %}
+                                        {% else %}
+                                        <button type="submit" name="no_me_gusta" value="{{ reaccion.0 }}"
+                                            style="border: 0; background-color: transparent;">
+                                            <img src="{% static 'botones/dislike.png' %}" width="24">
+                                        </button>
+                                        {% endif %}
+                                        {% endif %}
+                                        {% endfor %}
+                                    </form>
+                                </div>
+                                <div class="col d-md-flex justify-content-md-end">
+                                    <button type="button" style="border: 0; background-color: transparent;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960   960" width="30px" fill="#000000">
+                                            <path d="M240-400h480v-80H240v80Zm0-120h480v-80H240v80Zm0-120h480v-80H240v80ZM880-80 720-240H160q-33 0-56.5-23.5T80-320v-480q0-33 23.5-56.5T160-880h640q33 0 56.5 23.5T880-800v720ZM160-320h594l46 45v-525H160v480Zm0 0v-480 480Z" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            {% if publicacion.contenido %}
+                            <div class="row" style="margin-top: 1em; margin-bottom: 1em;">
+                                <div class="col">
+                                    <strong>{{ publicacion.contenido }}</strong>
+                                </div>
+                            </div>
+                            {% endif %} 
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

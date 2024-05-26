@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="d-flex justify-content-md-center">
+        <div class="row">
+        {% if publicaciones %}
+            {% for publicacion in publicaciones %}
+                <div class="col-md-auto">
+                    <div class="card mt-4" style="width: 18rem;">
+                        {% if publicacion.imagen %}
+                            <img src="{{ publicacion.imagen.url }}" class="card-img-top" style="width: 100%; height: 385px; object-fit: cover;">
+                        {% endif %}
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-sm-8">
+                                    <a href="{% url 'perfil' publicacion.autor %}" style="text-decoration: none;"><h5 class="card-title">{{ publicacion.autor }}</h5></a>
+                                </div>
+            
+                            </div>
+                            <p class="card-text">{{ publicacion.contenido }}</p>
+                            <div class="row">
+                                <div class="col">
+                                    <form action="{% url 'reaccion' %}" method="post">
+                                        {% csrf_token %}
+                                        <input type="hidden" value="{{ publicacion.id }}" name="id_publicacion">
+                                        {% for reaccion in reacciones %}
+                                            {% if reaccion.0 == 'like' %}
+                                                {% if publicaciones_reaccionadas_like %}
+                                                    {% if publicacion.id in publicaciones_reaccionadas_like  %}
+                                                        <button type="submit" name="me_gusta" value="{{ reaccion.0 }}" style="border: 0; background-color: transparent;">
+                                                            <img src="{% static 'botones/like_if.png' %}" width="24">
+                                                        </button>
+                                                    {% else %}
+                                                        <button type="submit" name="me_gusta" value="{{ reaccion.0 }}" style="border: 0; background-color: transparent;">
+                                                            <img src="{% static 'botones/like.png' %}" width="24">
+                                                        </button>
+                                                    {% endif %}
+                                                {% else %}
+                                                    <button type="submit" name="me_gusta" value="{{ reaccion.0 }}" style="border: 0; background-color: transparent;">
+                                                        <img src="{% static 'botones/like.png' %}" width="24">
+                                                    </button>
+                                                {% endif %}
+                                            {% else %}
+                                                {% if publicaciones_reaccionadas_dislike %}
+                                                    {% if publicacion.id in publicaciones_reaccionadas_dislike %}
+                                                        <button type="submit" name="no_me_gusta" value="{{ reaccion.0 }}" style="border: 0; background-color: transparent;">
+                                                            <img src="{% static 'botones/dislike_if.png' %}" width="24">
+                                                        </button>
+                                                    {% else %}
+                                                        <button type="submit" name="no_me_gusta" value="{{ reaccion.0 }}" style="border: 0; background-color: transparent;">
+                                                            <img src="{% static 'botones/dislike.png' %}" width="24">
+                                                        </button>
+                                                    {% endif %}
+                                                {% else %}
+                                                    <button type="submit" name="no_me_gusta" value="{{ reaccion.0 }}" style="border: 0; background-color: transparent;">
+                                                        <img src="{% static 'botones/dislike.png' %}" width="24">
+                                                    </button>
+                                                {% endif %}
+                                            {% endif %}
+                                        {% endfor %}
+                                    </form>
+                                </div>
+                                {% if comentarios %}
+                                <div class="col d-md-flex justify-content-md-end">
+                                    <button type="button" style="border: 0; background-color: transparent;" data-bs-toggle="collapse" data-bs-target="#{{ publicacion.id }}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="30px" fill="#000000"><path d="M240-400h480v-80H240v80Zm0-120h480v-80H240v80Zm0-120h480v-80H240v80ZM880-80 720-240H160q-33 0-56.5-23.5T80-320v-480q0-33 23.5-56.5T160-880h640q33 0 56.5 23.5T880-800v720ZM160-320h594l46 45v-525H160v480Zm0 0v-480 480Z"/></svg>
+                                    </button>
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% if usuario_autenticado %}
+                                <div class="row">
+                                    <div class="col">
+                                        <form action="{% url 'comentario' %}" method="post">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="id_publicacion" value="{{ publicacion.id }}">
+                                            <input class="form-control" type="text" placeholder="Añadir un comentario..." style="margin-bottom: 0;" name="comentario">
+                                            <button class="btn btn-primary" type="submit" style="margin-top: 1em;">ENVIAR</button>                                      
+                                        </form>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                        {% if comentarios %}
+                            <div class="collapse" id="{{ publicacion.id }}">
+                                <div class="card-footer">
+                                    {% for comentario in comentarios %}
+                                        {% if comentario.publicacion_id == publicacion.id %}
+                                            <div class="row">
+                                                <div class="col">
+                                                    <div class="comentarios">
+                                                        <strong>{{ comentario.autor }}</strong>
+                                                        <p>{{ comentario.contenido }}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                    {% endfor %}   
+                                </div>
+                            </div>
+                        {% endif %}  
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

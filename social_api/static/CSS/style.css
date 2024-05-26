@@ -1,0 +1,64 @@
+body {
+    background: #ff0084;
+    /* fallback for old browsers */
+    background: -webkit-linear-gradient(to right, #33001b, #ff0084);
+    /* Chrome 10-25, Safari 5.1-6 */
+    background: linear-gradient(to right, #33001b, #ff0084);
+    /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+
+}
+
+.form-control {
+    border: none;
+    border-bottom: 1px solid black;
+    /* Definir solo el borde inferior */
+    border-radius: 0;
+    /* Para eliminar cualquier radio en el borde inferior */
+    background-color: transparent; /* Fondo transparente por defecto */
+    margin-bottom: 40px;
+    margin-top: 15px;
+}
+
+/* Estilo cuando el input está enfocado */
+.form-control:focus {
+    /* border-color: #ced4da !important; /* Cambia el color del borde por uno neutral */
+    box-shadow: none !important; /* Elimina cualquier sombra cuando el input tiene foco */
+}
+
+.btn {
+    border-radius: 0;
+    font-weight:bold;
+}
+
+.container-solicitud {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.5);
+    padding: .5rem;
+}
+
+.container-solicitud p {
+    margin-bottom: .5rem;
+}
+
+.container-amigos {
+    margin-top: 3rem;
+    margin-bottom: 3rem;
+}
+
+.container-amigos p {
+    margin-bottom: .5rem;
+    margin-left: 1rem;
+}
+
+.container-amigos h5 {
+    margin-bottom: 1rem;
+}
+
+.comentarios {
+    margin-top: 1rem;
+    border-bottom: 1px solid;
+    padding-left: .5rem;
+}
+
+.comentarios p {
+    margin-left: .5rem;
+}
