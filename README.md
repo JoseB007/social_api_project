@@ -1,1 +1,1 @@
-Desplegar app en render
+Simulación básica y simple de una red social con Django 5.0.3 y Python. En está aplicación que simula una red social, los usuarios podrán registrarse, hacer publicaciones, reaccionar a las publicaciones de otros usuarios y seguir a otros usuarios.
